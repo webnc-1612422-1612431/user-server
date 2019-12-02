@@ -1,13 +1,8 @@
 var mysql = require('mysql');
+var config = require('../config.js')
 
 var createConnection = () => {
-    return mysql.createConnection({
-        host: 'remotemysql.com',
-        port: '3306',
-        user: '9EiX1oi713',
-        password: 'H0SREnsiWD',
-        database: '9EiX1oi713'
-    });
+    return mysql.createConnection(config.database);
 }
 module.exports = {
     load: sql => {

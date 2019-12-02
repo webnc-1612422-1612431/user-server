@@ -1,0 +1,167 @@
+const passport = require('passport');
+const passportJWT = require("passport-jwt");
+const bcrypt = require('bcrypt');
+const userModel = require('../models/users.model');
+
+const LocalStrategy = require('passport-local').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const configAuth = require('../utils/oauth');
+const JWTStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+  
+passport.deserializeUser(function(obj, done) {
+    done(null, obj);
+});
+
+passport.use(new JWTStrategy({
+        jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+        secretOrKey   : 'nghiatq_jwt_secretkey'
+
+    },
+    (jwtPayload, done) => {
+
+        // find the others information of user in database if needed
+        return userModel.get(jwtPayload.email).then(user => {
+            return done(null, user);
+        }).catch(err => {
+            return done(err);
+        });
+    }
+));
+
+passport.use(new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password'
+    }, 
+    (email, password, done) => {
+        userModel.get(email).then(rows => {
+            if (rows.length === 0) {
+                return done(null, false, {
+                    message: 'Tài khoản không tồn tại'
+                });
+            }
+            var user = rows[0];
+
+            // compare password
+            var ret = bcrypt.compareSync(password, user.password);
+            if (ret) {
+                
+                // for security, send only email
+                return done(null, {
+                    email: user.email
+                });
+            }
+            else {
+                return done(null, false, {
+                    message: 'Mật khẩu không chính xác'
+                })
+            }
+        }).catch(err => {
+            return done(err, false);
+        })
+    }
+));
+
+passport.use(new FacebookStrategy({
+    clientID: configAuth.facebookAuth.clientID,
+    clientSecret: configAuth.facebookAuth.clientSecret,
+    callbackURL: configAuth.facebookAuth.callbackURL,
+    profileFields: ['id', 'displayName', 'email', 'first_name', 'last_name', 'middle_name']
+},
+    // facebook will send user token and profile information
+    function (token, refreshToken, profile, done) {
+    
+        // this is asynchronous
+        process.nextTick(function () {
+
+            // look up into database to see if it already has this user
+            userModel.get(profile.emails[0].value).then(rows => {
+
+                // if account exists, just return it
+                if (rows.length > 0) {
+                    return done(null, {
+                        email: rows[0].email
+                    });
+                }
+            
+                // if it doesn't have any, create one
+                var entity = {
+                    facebookid: profile.id,
+                    password: token,
+                    email: profile.emails[0].value,
+                    fullname: profile.displayName
+                }
+
+                // add to database
+                userModel.add(entity).then(id => {
+                    return done(null, {
+                        email: entity.email
+                    });
+                }).catch(err => {
+                    console.log("Error when add facebook user: ", err);
+                    return done(null, false);
+                });
+
+            }).catch(err => {
+                if (err) {
+                    console.log("Error when get user by facebook id: ", err);
+                    return done(null, false);
+                }
+            });
+        });
+    })
+);
+
+passport.use(new GoogleStrategy({
+    clientID: configAuth.googleAuth.clientID,
+    clientSecret: configAuth.googleAuth.clientSecret,
+    callbackURL: configAuth.googleAuth.callbackURL,
+},
+    
+    // exactly the same as facebook
+    function (token, refreshToken, profile, done) {
+
+        process.nextTick(function () {
+
+            // look up into database to see if it already has this user
+            userModel.get(profile.emails[0].value).then(rows => {
+
+                // if account exists, just return it
+                if (rows.length > 0) {
+                    return done(null, {
+                        email: rows[0].email
+                    });
+                }
+            
+                // if it doesn't have any, create one
+                var entity = {
+                    googleid: profile.id,
+                    password: token,
+                    email: profile.emails[0].value,
+                    fullname: profile.displayName
+                }
+
+                // add to database
+                userModel.add(entity).then(id => {
+                    return done(null, {
+                        email: entity.email
+                    });
+                }).catch(err => {
+                    console.log("Error when add google user: ", err);
+                    return done(null, false);
+                });
+
+            }).catch(err => {
+                if (err) {
+                    console.log("Error when get user by google id: ", err);
+                    return done(null, false);
+                }
+            });
+        });
+    })
+);
