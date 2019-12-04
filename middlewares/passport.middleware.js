@@ -21,7 +21,6 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new JWTStrategy({
         jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
         secretOrKey   : 'nghiatq_jwt_secretkey'
-
     },
     (jwtPayload, done) => {
 
@@ -89,22 +88,10 @@ passport.use(new FacebookStrategy({
                     });
                 }
             
-                // if it doesn't have any, create one
-                var entity = {
-                    facebookid: profile.id,
-                    password: token,
-                    email: profile.emails[0].value,
-                    fullname: profile.displayName
-                }
-
-                // add to database
-                userModel.add(entity).then(id => {
-                    return done(null, {
-                        email: entity.email
-                    });
-                }).catch(err => {
-                    console.log("Error when add facebook user: ", err);
-                    return done(null, false);
+                // if it doesn't have any, return info
+                return done(null, {
+                    fullname: profile.displayName,
+                    email: profile.emails[0].value
                 });
 
             }).catch(err => {
@@ -138,22 +125,10 @@ passport.use(new GoogleStrategy({
                     });
                 }
             
-                // if it doesn't have any, create one
-                var entity = {
-                    googleid: profile.id,
-                    password: token,
-                    email: profile.emails[0].value,
-                    fullname: profile.displayName
-                }
-
-                // add to database
-                userModel.add(entity).then(id => {
-                    return done(null, {
-                        email: entity.email
-                    });
-                }).catch(err => {
-                    console.log("Error when add google user: ", err);
-                    return done(null, false);
+                // if it doesn't have any, return info
+                return done(null, {
+                    fullname: profile.displayName,
+                    email: profile.emails[0].value
                 });
 
             }).catch(err => {

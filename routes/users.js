@@ -35,6 +35,9 @@ router.post('/sign-up', (req, res, next) => {
       password: hash,
       address: address,
       fullname: fullname,
+      major: major,
+      // birthday: birthday,
+      // degree: degree,
       role: role
     }
 
@@ -96,8 +99,17 @@ router.get('/login/facebook/callback', passport.authenticate('facebook', {
   session: false,
   failureRedirect: config['client-domain'] + 'login/',
 }), (req, res) => {
-  const token = jwt.sign(JSON.stringify(req.user), 'nghiatq_jwt_secretkey');
-  res.redirect(config['client-domain'] + 'login?token=' + token + '#nghiatq');
+
+  // case sign-up
+  if (req.user && req.user.fullname) {
+    res.redirect(config['client-domain'] + 'sign-up-social?fullname=' + req.user.fullname + '&email=' + req.user.email);
+  }
+
+  // case login
+  else {
+    const token = jwt.sign(JSON.stringify(req.user), 'nghiatq_jwt_secretkey');
+    res.redirect(config['client-domain'] + 'login?token=' + token + '#nghiatq');
+  }
 });
 
 // google login
@@ -107,8 +119,17 @@ router.get('/login/google/callback', passport.authenticate('google', {
   session: false,
   failureRedirect: config['client-domain'] + 'login/',
 }), (req, res) => {
-  const token = jwt.sign(JSON.stringify(req.user), 'nghiatq_jwt_secretkey');
-  res.redirect(config['client-domain'] + 'login?token=' + token + '#nghiatq');
+
+  // case sign-up
+  if (req.user && req.user.fullname) {
+    res.redirect(config['client-domain'] + 'sign-up-social?fullname=' + req.user.fullname + '&email=' + req.user.email);
+  }
+
+  // case login
+  else {
+    const token = jwt.sign(JSON.stringify(req.user), 'nghiatq_jwt_secretkey');
+    res.redirect(config['client-domain'] + 'login?token=' + token + '#nghiatq');
+  }
 });
 
 // register a new user
