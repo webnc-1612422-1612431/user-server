@@ -10,18 +10,18 @@ const configAuth = require('../utils/oauth');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
     done(null, user);
 });
-  
-passport.deserializeUser(function(obj, done) {
+
+passport.deserializeUser(function (obj, done) {
     done(null, obj);
 });
 
 passport.use(new JWTStrategy({
-        jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-        secretOrKey   : 'nghiatq_jwt_secretkey'
-    },
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: 'nghiatq_jwt_secretkey'
+},
     (jwtPayload, done) => {
 
         // find the others information of user in database if needed
@@ -34,9 +34,9 @@ passport.use(new JWTStrategy({
 ));
 
 passport.use(new LocalStrategy({
-        usernameField: 'email',
-        passwordField: 'password'
-    }, 
+    usernameField: 'email',
+    passwordField: 'password'
+},
     (email, password, done) => {
         userModel.get(email).then(rows => {
             if (rows.length === 0) {
@@ -49,7 +49,14 @@ passport.use(new LocalStrategy({
             // compare password
             var ret = bcrypt.compareSync(password, user.password);
             if (ret) {
-                
+
+                // check verified
+                if (user.verified == 0) {
+                    return done(null, false, {
+                        message: 'Tài khoản của bạn chưa được kích hoạt'
+                    });
+                }
+
                 // for security, send only email
                 return done(null, {
                     email: user.email
@@ -74,7 +81,7 @@ passport.use(new FacebookStrategy({
 },
     // facebook will send user token and profile information
     function (token, refreshToken, profile, done) {
-    
+
         // this is asynchronous
         process.nextTick(function () {
 
@@ -83,11 +90,19 @@ passport.use(new FacebookStrategy({
 
                 // if account exists, just return it
                 if (rows.length > 0) {
+
+                    // check verified
+                    if (rows[0].verified == 0) {
+                        return done(null, {
+                            message: 'not-verified'
+                        });
+                    }
+
                     return done(null, {
                         email: rows[0].email
                     });
                 }
-            
+
                 // if it doesn't have any, return info
                 return done(null, {
                     fullname: profile.displayName,
@@ -109,7 +124,7 @@ passport.use(new GoogleStrategy({
     clientSecret: configAuth.googleAuth.clientSecret,
     callbackURL: configAuth.googleAuth.callbackURL,
 },
-    
+
     // exactly the same as facebook
     function (token, refreshToken, profile, done) {
 
@@ -120,11 +135,19 @@ passport.use(new GoogleStrategy({
 
                 // if account exists, just return it
                 if (rows.length > 0) {
+
+                    // check verified
+                    if (rows[0].verified == 0) {
+                        return done(null, {
+                            message: 'not-verified'
+                        });
+                    }
+
                     return done(null, {
                         email: rows[0].email
                     });
                 }
-            
+
                 // if it doesn't have any, return info
                 return done(null, {
                     fullname: profile.displayName,
