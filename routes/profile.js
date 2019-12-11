@@ -54,7 +54,8 @@ router.post('/update-info', (req, res, next) => {
             address: info.address,
             fullname: info.fullname,
             birthday: info.birthday.substr(0, 10),
-            introduction: info.introduction
+            introduction: info.introduction,
+            price: parseInt(info.price)
         }
         userModel.put(entity).then(rows => {
             res.status(200).json({
