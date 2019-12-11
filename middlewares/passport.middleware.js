@@ -59,6 +59,7 @@ passport.use(new LocalStrategy({
 
                 // for security, send only email
                 return done(null, {
+                    id: user.id,
                     email: user.email
                 });
             }

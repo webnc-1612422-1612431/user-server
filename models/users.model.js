@@ -1,5 +1,4 @@
 var db = require('../utils/db');
-var bcrypt = require('bcrypt');
 
 module.exports = {
 
