@@ -17,4 +17,12 @@ module.exports = {
     put: entity => {
         return db.update(`user`, `email`, entity);
     },
+
+    getTeacherByMajor: major => {
+        return db.load(`select * from user where role = 'teacher' and major = '${major}'`)
+    },
+
+    getAllTeachers: () => {
+        return db.load(`select * from user where role = 'teacher' `);
+    }
 }

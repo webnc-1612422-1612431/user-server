@@ -76,6 +76,23 @@ router.get('/get', (req, res, next) => {
     })
 });
 
+// get all teachers
+router.get('/all-teacher', (req, res, next) => {
+
+    const major = req.query.major;
+
+    const functionGet = major == 'all' ? userModel.getAllTeachers : userModel.getTeacherByMajor;
+
+    functionGet(major).then(teachers => {
+        return res.status(200).json({
+            teachers: teachers
+        })
+    }).catch(err => {
+        console.log(err);
+    })
+
+})
+
 function abbreviateNumber(number) {
     var SI_SYMBOL = ["", "K", "M", "G", "T", "P", "E"];
     var tier = Math.log10(number) / 3 | 0;
