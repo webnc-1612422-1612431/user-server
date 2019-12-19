@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var bcrypt = require('bcrypt');
 var userModel = require('../models/users.model');
 var userSkillModel = require('../models/user.skills.model');
 var skillModel = require('../models/skills.model');
@@ -152,6 +153,37 @@ router.post('/update-tags', (req, res, next) => {
         res.status(400).json({
             message: 'Đã xảy ra lỗi, vui lòng thử lại'
         })
+    }
+})
+
+// change password
+router.post('/change-pass', (req, res, next) => {
+
+    const oldPassword = req.body.oldPassword;
+    const password = req.body.password;
+    const user = req.user[0];
+
+    // compare pass
+    if (bcrypt.compareSync(oldPassword, user.password)) {
+        var entity = {
+            email: user.email,
+            lostpasstoken: '',
+            password: bcrypt.hashSync(password, 10)
+        }
+        userModel.put(entity).then(rows => {
+            res.status(200).json({
+                message: 'Đổi mật khẩu thành công'
+            });
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, vui lòng thử lại'
+            });
+        });
+    }
+    else {
+        return res.status(400).json({
+            message: 'Mật khẩu cũ không chính xác'
+        });
     }
 })
 

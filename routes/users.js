@@ -230,6 +230,7 @@ router.post('/sign-up', (req, res, next) => {
       degree: degree,
       role: role,
       lostpasstoken: code,
+      price: 0,
       verified: 0
     }
 
