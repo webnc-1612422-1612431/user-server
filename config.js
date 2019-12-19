@@ -1,7 +1,7 @@
 // these exports are for localhost and database mysql local
 var exports_1 = {
     'client-domain': '//localhost:5000/',
-    'server-domain': '//localhost:6000/',
+    'server-domain': '//localhost:5001/',
     'database': {
         'host': 'localhost',
         'port': '3306',
@@ -14,7 +14,7 @@ var exports_1 = {
 // these exports are for localhost and database remote
 var exports_2 = {
     'client-domain': '//localhost:5000/',
-    'server-domain': '//localhost:6000/',
+    'server-domain': '//localhost:5001/',
     'database': {
         'host': 'sql10.freemysqlhosting.net',
         'port': '3306',
