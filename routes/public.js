@@ -45,6 +45,7 @@ router.get('/get', (req, res, next) => {
 
                         if (contracts.length > 0) {
                             return res.status(200).json({
+                                email: rows[0].email,
                                 fullname: rows[0].fullname,
                                 address: rows[0].address,
                                 introduction: rows[0].introduction,
