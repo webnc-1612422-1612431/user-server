@@ -45,6 +45,7 @@ router.get('/get', (req, res, next) => {
 
                         if (contracts.length > 0) {
                             return res.status(200).json({
+                                teacherid: rows[0].id,
                                 email: rows[0].email,
                                 fullname: rows[0].fullname,
                                 address: rows[0].address,
@@ -54,7 +55,8 @@ router.get('/get', (req, res, next) => {
                                 degree: degree,
                                 age: Math.floor(diff / 31557600000),
                                 countContracts: contracts[0].count,
-                                totalRevenue: contracts[0].sum,
+                                totalRevenue: abbreviateNumber(contracts[0].sum),
+                                rate: contracts[0].rate,
                                 tags: tags
                             });
                         }
@@ -90,6 +92,39 @@ router.get('/all-teacher', (req, res, next) => {
         })
     }).catch(err => {
         console.log(err);
+    })
+
+})
+
+// get top ten teachers with highest rate
+router.get('/highest-rate-teachers', (req, res, next) => {
+
+    const teacherid = req.query.teacherid;
+
+    contractModel.topTenRate().then(teachers => {
+        if (teachers.length > 0) {
+
+            // if user want to check
+            if (teacherid != undefined) {
+                return res.status(200).json({
+                    topNumber: teachers.map(x => x.teacherid).indexOf(teacherid) + 1
+                })
+            }
+            else {
+                return res.status(200).json({
+                    listTopRate: teachers.map(x => x.teacherid)
+                })
+            }
+        }
+        else {
+            return res.status(200).json({
+                topNumber: 0
+            })
+        }
+    }).catch(err => {
+        return res.status(400).json({
+            message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+        })
     })
 
 })

@@ -4,6 +4,7 @@ var bcrypt = require('bcrypt');
 var userModel = require('../models/users.model');
 var userSkillModel = require('../models/user.skills.model');
 var skillModel = require('../models/skills.model');
+var commentModel = require('../models/comments.model');
 
 // get profile if exists
 router.get('/me', (req, res, next) => {
@@ -185,6 +186,31 @@ router.post('/change-pass', (req, res, next) => {
             message: 'Mật khẩu cũ không chính xác'
         });
     }
+})
+
+// get comments
+router.post('/get-comments', (req, res, next) => {
+
+    const teacherid = req.body.teacherid;
+
+    commentModel.getByTeacherId(teacherid).then(comments => {
+
+        if (comments.length > 0) {
+            return res.status(200).json({
+                comments: comments
+            })
+        }
+        else {
+            return res.status(200).json({
+                comments: []
+            })
+        }
+
+    }).catch(err => {
+        return res.status(400).json({
+            message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+        })
+    })
 })
 
 module.exports = router;
