@@ -23,6 +23,6 @@ module.exports = {
     },
 
     getAllTeachers: () => {
-        return db.load(`select * from user where role = 'teacher' `);
+        return db.load(`select *, avg(rate) as rate from user left join contract on user.id = contract.teacherid group by user.id`);
     }
 }

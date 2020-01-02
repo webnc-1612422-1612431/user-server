@@ -57,6 +57,7 @@ router.get('/get', (req, res, next) => {
                                 countContracts: contracts[0].count,
                                 totalRevenue: abbreviateNumber(contracts[0].sum),
                                 rate: contracts[0].rate,
+                                successRate: Math.round(contracts[0].success * 100 / contracts[0].count),
                                 tags: tags
                             });
                         }
@@ -83,17 +84,47 @@ router.get('/get', (req, res, next) => {
 router.get('/all-teacher', (req, res, next) => {
 
     const major = req.query.major;
+    const special = req.query.special;
 
-    const functionGet = major == 'all' ? userModel.getAllTeachers : userModel.getTeacherByMajor;
-
-    functionGet(major).then(teachers => {
-        return res.status(200).json({
-            teachers: teachers
+    // get all teachers of a specific major
+    if (special == undefined || special == 'all') {
+        const functionGet = major == 'all' ? userModel.getAllTeachers : userModel.getTeacherByMajor;
+        functionGet(major).then(teachers => {
+            return res.status(200).json({
+                teachers: teachers
+            })
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
         })
-    }).catch(err => {
-        console.log(err);
-    })
+    }
 
+    // get list of top rate teachers
+    else if (special == 'top-rate') {
+        contractModel.topTenRate().then(teachers_top_rate => {
+            return res.status(200).json({
+                teachers: teachers_top_rate
+            })
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
+    }
+
+    // get list of top teachers who have largest contract amount
+    else if (special == 'top-number-contract') {
+        contractModel.topTenContractNumbers().then(teachers_top_contract => {
+            return res.status(200).json({
+                teachers: teachers_top_contract
+            })
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
+    }
 })
 
 // get top ten teachers with highest rate
