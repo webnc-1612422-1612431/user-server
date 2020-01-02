@@ -3,6 +3,7 @@ var router = express.Router();
 var bcrypt = require('bcrypt');
 var userModel = require('../models/users.model');
 var userSkillModel = require('../models/user.skills.model');
+var contractModel = require('../models/contracts.model');
 var skillModel = require('../models/skills.model');
 var commentModel = require('../models/comments.model');
 
@@ -189,28 +190,40 @@ router.post('/change-pass', (req, res, next) => {
 })
 
 // get comments
-router.post('/get-comments', (req, res, next) => {
+router.post('/get-contracts-comments', (req, res, next) => {
 
     const teacherid = req.body.teacherid;
 
-    commentModel.getByTeacherId(teacherid).then(comments => {
+    contractModel.getByTeacherId(teacherid).then(contracts => {
 
-        if (comments.length > 0) {
+        if (contracts.length == 0) {
+            contracts = [];
+        }
+
+        commentModel.getByTeacherId(teacherid).then(comments => {
+
+            if (comments.length == 0) {
+                comments = [];
+            }
+
             return res.status(200).json({
+                contracts: contracts,
                 comments: comments
             })
-        }
-        else {
-            return res.status(200).json({
-                comments: []
+    
+        }).catch(errr => {
+            console.log(errr)
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
             })
-        }
-
-    }).catch(err => {
+        })
+    })
+    .catch(err => {
+        console.log(err)
         return res.status(400).json({
             message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
         })
-    })
+    });
 })
 
 module.exports = router;

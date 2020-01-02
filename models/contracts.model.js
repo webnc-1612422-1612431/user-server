@@ -2,6 +2,11 @@ var db = require('../utils/db');
 
 module.exports = {
 
+    getByTeacherId: teacherid => {
+        return db.load(`SELECT contract.description, contract.rate, DATE_FORMAT(contract.startdate,'%d/%m/%Y') AS start, `
+        + `DATE_FORMAT(contract.enddate,'%d/%m/%Y') AS end, skill.skill FROM contract join skill on contract.skillid = skill.id where contract.teacherid = '${teacherid}'`)
+    },
+
     countByTeacherId: teacherid => {
         return db.load(`select count(*) as count, `
         + `coalesce(sum(coalesce(revenue,0)),0) as sum, `
