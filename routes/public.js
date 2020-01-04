@@ -51,7 +51,7 @@ router.get('/get', (req, res, next) => {
                                 address: rows[0].address,
                                 introduction: rows[0].introduction,
                                 avatar: rows[0].avatar,
-                                price: abbreviateNumber(rows[0].price),
+                                price: rows[0].price,
                                 degree: degree,
                                 age: Math.floor(diff / 31557600000),
                                 countContracts: contracts[0].count,

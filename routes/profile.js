@@ -293,4 +293,29 @@ router.post('/update-request', (req, res, next) => {
     })
 })
 
+// add new request
+router.post('/create-request', (req, res, next) => {
+    const data = req.body.data;
+    const entity = {
+        studentid: req.user[0].id,
+        teacherid: data.teacherid,
+        skill: data.skillid,
+        isaccept: 0,
+        dayperweek: data.daypweek,
+        hourperday: data.hourpday,
+        startdate: data.startdate,
+        enddate: data.enddate
+    }
+
+    requestModel.add(entity).then(id => {
+        return res.status(200).json({
+            message: 'Tạo yêu cầu thành công, vui lòng chờ phản hồi'
+        })
+    }).catch(err => {
+        return res.status(400).json({
+            message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+        })
+    })
+})
+
 module.exports = router;

@@ -20,5 +20,9 @@ module.exports = {
 
     delete: requestid => {
         return db.delete(`request`, `id`, requestid);
+    },
+
+    add: entity => {
+        return db.add(`request`, entity);
     }
 }
