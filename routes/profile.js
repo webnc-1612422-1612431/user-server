@@ -6,6 +6,7 @@ var userSkillModel = require('../models/user.skills.model');
 var contractModel = require('../models/contracts.model');
 var skillModel = require('../models/skills.model');
 var commentModel = require('../models/comments.model');
+var requestModel = require('../models/requests.model');
 
 // get profile if exists
 router.get('/me', (req, res, next) => {
@@ -189,10 +190,10 @@ router.post('/change-pass', (req, res, next) => {
     }
 })
 
-// get comments
+// get comments & contracts
 router.post('/get-contracts-comments', (req, res, next) => {
 
-    const teacherid = req.body.teacherid;
+    const teacherid = req.body.teacherid || req.user[0].id;
 
     contractModel.getByTeacherId(teacherid).then(contracts => {
 
@@ -210,7 +211,7 @@ router.post('/get-contracts-comments', (req, res, next) => {
                 contracts: contracts,
                 comments: comments
             })
-    
+
         }).catch(errr => {
             console.log(errr)
             return res.status(400).json({
@@ -218,12 +219,60 @@ router.post('/get-contracts-comments', (req, res, next) => {
             })
         })
     })
-    .catch(err => {
+        .catch(err => {
+            console.log(err)
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        });
+})
+
+// get requests
+router.post('/get-requests', (req, res, next) => {
+
+    const teacherid = req.body.teacherid || req.user[0].id;
+
+    requestModel.getByTeacherId(teacherid).then(requests => {
+
+        if (requests.length == 0) {
+            requests = [];
+        }
+
+        return res.status(200).json({
+            requests: requests,
+            price: req.user[0].price
+        })
+    })
+        .catch(err => {
+            console.log(err)
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        });
+
+})
+
+// update request
+router.post('/update-request', (req, res, next) => {
+
+    const requestid = req.body.requestid;
+    const isaccept = req.body.isaccept;
+
+    const entity = {
+        id: requestid,
+        isaccept: isaccept
+    }
+
+    requestModel.update(entity).then(id => {
+        return res.status(200).json({
+            message: (isaccept ? 'Chấp nhận' : 'Từ chối') + ' yêu cầu thành công'
+        })
+    }).catch(err => {
         console.log(err)
         return res.status(400).json({
             message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
         })
-    });
+    })
 })
 
 module.exports = router;

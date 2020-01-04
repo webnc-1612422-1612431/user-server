@@ -161,13 +161,7 @@ router.get('/highest-rate-teachers', (req, res, next) => {
 })
 
 function abbreviateNumber(number) {
-    var SI_SYMBOL = ["", "K", "M", "G", "T", "P", "E"];
-    var tier = Math.log10(number) / 3 | 0;
-    if (tier == 0) return number;
-    var suffix = SI_SYMBOL[tier];
-    var scale = Math.pow(10, tier * 3);
-    var scaled = number / scale;
-    return scaled.toFixed(1) + suffix;
+    return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
 }
 
 module.exports = router;
