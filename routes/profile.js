@@ -193,7 +193,7 @@ router.post('/change-pass', (req, res, next) => {
 // get comments & contracts
 router.post('/get-contracts-comments', (req, res, next) => {
 
-    const teacherid = req.body.teacherid || req.user[0].id;
+    const teacherid = req.body.teacherid;
 
     contractModel.getByTeacherId(teacherid).then(contracts => {
 
@@ -232,7 +232,7 @@ router.post('/get-requests', (req, res, next) => {
 
     const isteacherview = req.user[0].role === 'teacher';
 
-    requestModel.getByTeacherId(req.user[0].id, isteacherview).then(requests => {
+    requestModel.getByUserId(req.user[0].id, isteacherview).then(requests => {
 
         if (requests.length == 0) {
             requests = [];
@@ -261,6 +261,7 @@ router.post('/update-request', (req, res, next) => {
 
     const requestid = req.body.requestid;
     const isaccept = req.body.isaccept;
+    const revenue = req.body.revenue;
 
     // delete
     if (isaccept === -1) {
@@ -282,9 +283,44 @@ router.post('/update-request', (req, res, next) => {
     }
 
     requestModel.update(entity).then(id => {
-        return res.status(200).json({
-            message: (isaccept ? 'Chấp nhận' : 'Từ chối') + ' yêu cầu thành công'
-        })
+
+        // create contract
+        if (isaccept === 2) {
+            requestModel.get(requestid).then(requestInfo => {
+                if (requestInfo.length > 0) {
+                    contractModel.add({
+                        teacherid: requestInfo[0].teacherid,
+                        studentid: requestInfo[0].studentid,
+                        skillid: requestInfo[0].skill,
+                        revenue: revenue,
+                        startdate: requestInfo[0].startdate,
+                        enddate: requestInfo[0].enddate,
+                        rate: 0,
+                        state: 0,
+                        signeddate: new Date()
+                    }).then(succ => {
+                        return res.status(200).json({
+                            message: 'Chấp nhận yêu cầu thành công'
+                        })
+                    }).catch(erro => {
+                        console.log(erro)
+                        return res.status(400).json({
+                            message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+                        })
+                    })
+                }
+            }).catch(error => {
+                console.log(error)
+                return res.status(400).json({
+                    message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+                })
+            })
+        }
+        else {
+            return res.status(200).json({
+                message: 'Từ chối yêu cầu thành công'
+            })
+        }
     }).catch(err => {
         console.log(err)
         return res.status(400).json({
@@ -316,6 +352,133 @@ router.post('/create-request', (req, res, next) => {
             message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
         })
     })
+})
+
+// get contracts
+router.post('/get-contracts', (req, res, next) => {
+    const isteacherview = req.user[0].role === 'teacher';
+
+    contractModel.getByUserId(req.user[0].id, isteacherview).then(contracts => {
+
+        if (contracts.length == 0) {
+            contracts = [];
+        }
+
+        return res.status(200).json({
+            contracts: contracts,
+            isteacherview: isteacherview
+        })
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        });
+})
+
+// get contract detail
+router.get('/detail-contract', (req, res, next) => {
+
+    var id = req.query.id;
+
+    contractModel.getDetail(id).then(contracts => {
+
+        if (contracts.length > 0 && (req.user[0].id === contracts[0].teacherid || req.user[0].id === contracts[0].studentid)) {
+            contracts[0].teacherage = Math.floor((Date.now() - contracts[0].teacherage.getTime()) / 31557600000);
+            contracts[0].studentage = Math.floor((Date.now() - contracts[0].studentage.getTime()) / 31557600000);
+            return res.status(200).json({
+                info: contracts[0],
+                isteacherview: req.user[0].role === 'teacher'
+            });
+        }
+        else {
+            return res.status(400).json({
+                message: 'Không tồn tại hợp đồng này'
+            });
+        }
+    })
+        .catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, vui lòng thử lại'
+            });
+        })
+})
+
+//get comments
+router.post('/get-comments', (req, res, next) => {
+
+    const teacherid = req.body.teacherid;
+
+    commentModel.getByTeacherId(teacherid).then(comments => {
+
+        if (comments.length == 0) {
+            comments = [];
+        }
+
+        return res.status(200).json({
+            comments: comments
+        })
+
+    }).catch(errr => {
+        return res.status(400).json({
+            message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+        })
+    })
+})
+
+// update contract
+router.post('/update-contract', (req, res, next) => {
+
+    const contractid = req.body.id;
+    const description = req.body.description;
+    const rate = req.body.rate;
+    const state = req.body.state;
+
+    const entity = {
+        id: contractid,
+        description: description,
+        rate: rate,
+        state: state
+    }
+
+    contractModel.update(entity).then(id => {
+        return res.status(200).json({
+            message: 'Cập nhật thông tin hợp đồng thành công'
+        })
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
+})
+
+// add new commnet
+router.post('/add-comment', (req, res, next) => {
+
+    const teacherid = req.body.teacherid;
+    const userid = req.body.studentid;
+    const content = req.body.content;
+
+    const entity = {
+        userid: userid,
+        teacherid: teacherid,
+        content: content
+    }
+
+    commentModel.add(entity).then(id => {
+        return res.status(200).json({
+            message: 'Thêm nhận xét thành công'
+        })
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
 })
 
 module.exports = router;

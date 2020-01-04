@@ -2,7 +2,7 @@ var db = require('../utils/db');
 
 module.exports = {
     
-    getByTeacherId: (userid, isTeacherView) => {
+    getByUserId: (userid, isTeacherView) => {
         const key1 = isTeacherView ? 'request.studentid' : 'request.teacherid';
         const key2 = isTeacherView ? 'teacherid' : 'studentid';
 
@@ -24,5 +24,9 @@ module.exports = {
 
     add: entity => {
         return db.add(`request`, entity);
+    },
+
+    get: id => {
+        return db.load(`SELECT * from request where id = ${id}`);
     }
 }
