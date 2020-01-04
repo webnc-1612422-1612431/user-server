@@ -7,6 +7,7 @@ var contractModel = require('../models/contracts.model');
 var skillModel = require('../models/skills.model');
 var commentModel = require('../models/comments.model');
 var requestModel = require('../models/requests.model');
+var complainModel = require('../models/complain.model');
 
 // get profile if exists
 router.get('/me', (req, res, next) => {
@@ -387,10 +388,29 @@ router.get('/detail-contract', (req, res, next) => {
         if (contracts.length > 0 && (req.user[0].id === contracts[0].teacherid || req.user[0].id === contracts[0].studentid)) {
             contracts[0].teacherage = Math.floor((Date.now() - contracts[0].teacherage.getTime()) / 31557600000);
             contracts[0].studentage = Math.floor((Date.now() - contracts[0].studentage.getTime()) / 31557600000);
-            return res.status(200).json({
-                info: contracts[0],
-                isteacherview: req.user[0].role === 'teacher'
-            });
+
+            // get current complain
+            complainModel.get(contracts[0].id).then(complains => {
+
+                // check if existed unhandled complain
+                var complainNotHandledExisted = false;
+                for (var i = 0; i < complains.length; i++) {
+                    if (complains[i].ishandled !== 1) {
+                        complainNotHandledExisted = true;
+                        break;
+                    }
+                }
+
+                return res.status(200).json({
+                    info: contracts[0],
+                    isteacherview: req.user[0].role === 'teacher',
+                    complainNotHandledExisted: complainNotHandledExisted
+                });
+            }).catch(complainErr => {
+                return res.status(400).json({
+                    message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                });
+            })
         }
         else {
             return res.status(400).json({
@@ -471,6 +491,30 @@ router.post('/add-comment', (req, res, next) => {
     commentModel.add(entity).then(id => {
         return res.status(200).json({
             message: 'Thêm nhận xét thành công'
+        })
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
+})
+
+// add new complain
+router.post('/add-complain', (req, res, next) => {
+
+    const contractid = req.body.contractid;
+    const content = req.body.content;
+
+    const entity = {
+        contractid: contractid,
+        content: content
+    }
+
+    complainModel.add(entity).then(id => {
+        return res.status(200).json({
+            message: 'Gửi khiếu nại thành công, vui lòng chờ xử lý'
         })
     })
         .catch(err => {
