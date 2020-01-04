@@ -230,21 +230,25 @@ router.post('/get-contracts-comments', (req, res, next) => {
 // get requests
 router.post('/get-requests', (req, res, next) => {
 
-    const teacherid = req.body.teacherid || req.user[0].id;
+    const isteacherview = req.user[0].role === 'teacher';
 
-    requestModel.getByTeacherId(teacherid).then(requests => {
+    requestModel.getByTeacherId(req.user[0].id, isteacherview).then(requests => {
 
         if (requests.length == 0) {
             requests = [];
         }
 
+        // if teacher view, get he's price
+        if (isteacherview) {
+            for (let i = 0; i < requests.length; i++) requests[i].price = req.user[0].price;
+        }
+
         return res.status(200).json({
             requests: requests,
-            price: req.user[0].price
+            isteacherview: isteacherview
         })
     })
         .catch(err => {
-            console.log(err)
             return res.status(400).json({
                 message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
             })
@@ -258,6 +262,20 @@ router.post('/update-request', (req, res, next) => {
     const requestid = req.body.requestid;
     const isaccept = req.body.isaccept;
 
+    // delete
+    if (isaccept === -1) {
+        requestModel.delete(requestid).then(id => {
+            return res.status(200).json({
+                message: 'Hủy yêu cầu thành công'
+            })
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
+            })
+        })
+    }
+
+    // update
     const entity = {
         id: requestid,
         isaccept: isaccept
