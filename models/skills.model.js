@@ -3,7 +3,7 @@ var db = require('../utils/db');
 module.exports = {
 
     all: () => {
-        return db.load(`select * from skill`);
+        return db.load(`select * from skill where state = 1`);
     },
 
     add: entity => {

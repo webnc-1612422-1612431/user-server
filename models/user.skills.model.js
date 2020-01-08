@@ -11,7 +11,7 @@ module.exports = {
     },
 
     getByUser: userid => {
-        return db.load(`select * from user_skill where userid = '${userid}'`);
+        return db.load(`select * from user_skill join skill on user_skill.skillid = skill.id where skill.state = 1 and userid = '${userid}'`);
     },
 
     getBySkill: skillid => {
