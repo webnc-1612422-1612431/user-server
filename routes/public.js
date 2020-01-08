@@ -94,6 +94,7 @@ router.get('/all-teacher', (req, res, next) => {
                 teachers: teachers
             })
         }).catch(err => {
+            console.log(err);
             return res.status(400).json({
                 message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
             })
@@ -107,6 +108,7 @@ router.get('/all-teacher', (req, res, next) => {
                 teachers: teachers_top_rate
             })
         }).catch(err => {
+            console.log(err);
             return res.status(400).json({
                 message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
             })
@@ -120,6 +122,7 @@ router.get('/all-teacher', (req, res, next) => {
                 teachers: teachers_top_contract
             })
         }).catch(err => {
+            console.log(err);
             return res.status(400).json({
                 message: 'Đã xảy ra lỗi, xin vui lòng thử lại'
             })
