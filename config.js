@@ -16,11 +16,11 @@ var exports_2 = {
     'client-domain': '//localhost:5000/',
     'server-domain': '//localhost:5001/',
     'database': {
-        'host': 'sql10.freemysqlhosting.net',
+        'host': 'remotemysql.com',
         'port': '3306',
-        'user': 'sql10314363',
-        'password': 'alEh71xttJ',
-        'database': 'sql10314363'
+        'user': 'K7n15LVrFb',
+        'password': 'URsvbRQ06D',
+        'database': 'K7n15LVrFb'
     }
 }
 
@@ -29,11 +29,11 @@ var exports_3 = {
     'client-domain': 'http://userclient-422-431.herokuapp.com/',
     'server-domain': 'http://userserver-422-431.herokuapp.com/',
     'database': {
-        'host': 'sql10.freemysqlhosting.net',
+        'host': 'remotemysql.com',
         'port': '3306',
-        'user': 'sql10314363',
-        'password': 'alEh71xttJ',
-        'database': 'sql10314363'
+        'user': 'K7n15LVrFb',
+        'password': 'URsvbRQ06D',
+        'database': 'K7n15LVrFb'
     }
 }
 
